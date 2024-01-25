@@ -1,0 +1,19 @@
+{
+  "name": "handle-helper",
+  "version": "1.0.0",
+  "description": "统一处理函数执行结果",
+  "main": "dist/HandleHelper.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "files": [
+    "./dist/HandleHelper.js",
+    "./@types/HandleHelper.d.ts"
+  ],
+  "keywords": [],
+  "author": {
+    "name": "longjiang",
+    "email": "l502858283@gmail.com"
+  },
+  "license": "ISC"
+}
