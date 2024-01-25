@@ -7,9 +7,10 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "files": [
-    "./dist/HandleHelper.js",
-    "./@types/HandleHelper.d.ts"
+    "dist",
+    "@types"
   ],
+  "types": "@types",
   "keywords": [],
   "author": {
     "name": "longjiang",
