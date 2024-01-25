@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.HandleHelper = exports.handle = exports.updateHandleFinallyFn = exports.updateHandleErrorFn = exports.updateHandleSuccessFn = void 0;
+exports.handle = exports.updateHandleFinallyFn = exports.updateHandleErrorFn = exports.updateHandleSuccessFn = void 0;
 const ON_ERROR_FN = "__ON_HANDLE_ERROR__";
 const ON_SUCCESS_FN = "__ON_HANDLE_SUCCESS__";
 const ON_FINALLY_FN = "__ON_HANDLE_FINALLY__";
@@ -52,17 +52,17 @@ function isPromise(value) {
 function isFunction(value) {
     return typeof value === "function";
 }
-function getOnErrorFn(callbackOptions) {
+function getHandleErrorFn(callbackOptions) {
     if (callbackOptions === null || callbackOptions === void 0 ? void 0 : callbackOptions.tempDisableHandError)
         return;
     return getHandleFn(FN_TYPE.ERROR, callbackOptions === null || callbackOptions === void 0 ? void 0 : callbackOptions.onHandleError);
 }
-function getOnSuccessFn(callbackOptions) {
+function getHandleSuccessFn(callbackOptions) {
     if (callbackOptions === null || callbackOptions === void 0 ? void 0 : callbackOptions.tempDisableHandSuccess)
         return;
     return getHandleFn(FN_TYPE.SUCCESS, callbackOptions === null || callbackOptions === void 0 ? void 0 : callbackOptions.onHandleSuccess);
 }
-function getOnFinallyFn(callbackOptions) {
+function getHandleFinallyFn(callbackOptions) {
     if (callbackOptions === null || callbackOptions === void 0 ? void 0 : callbackOptions.tempDisableHandFinally)
         return;
     return getHandleFn(FN_TYPE.FINALLY, callbackOptions === null || callbackOptions === void 0 ? void 0 : callbackOptions.onHandleFinally);
@@ -87,9 +87,9 @@ function updateHandleFinallyFn(fn) {
 exports.updateHandleFinallyFn = updateHandleFinallyFn;
 function handle(fn, callbackOptions) {
     let isSyncFn = true;
-    const onHandleSuccess = getOnSuccessFn(callbackOptions);
-    const onHandleError = getOnErrorFn(callbackOptions);
-    const onHandleFinally = getOnFinallyFn(callbackOptions);
+    const onHandleSuccess = getHandleSuccessFn(callbackOptions);
+    const onHandleError = getHandleErrorFn(callbackOptions);
+    const onHandleFinally = getHandleFinallyFn(callbackOptions);
     try {
         const result = fn();
         if (isPromise(result)) {
@@ -146,5 +146,5 @@ class HandleHelper {
         handle(fn, callbackOptions);
     }
 }
-exports.HandleHelper = HandleHelper;
+exports.default = HandleHelper;
 HandleHelper.showLog = true;

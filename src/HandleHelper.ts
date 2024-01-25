@@ -1,6 +1,15 @@
 const ON_ERROR_FN = "__ON_HANDLE_ERROR__"
 const ON_SUCCESS_FN = "__ON_HANDLE_SUCCESS__"
 const ON_FINALLY_FN = "__ON_HANDLE_FINALLY__"
+type Fn = ((...value: any[]) => any) | ((...value: any[]) => Promise<any>);
+type CallbackOptions = {
+  tempDisableHandSuccess?: boolean
+  tempDisableHandError?: boolean
+  tempDisableHandFinally?: boolean
+  onHandleSuccess?: Function
+  onHandleError?: Function
+  onHandleFinally?: Function
+}
 
 enum FN_TYPE {
   SUCCESS = ON_ERROR_FN,
@@ -51,17 +60,17 @@ function isFunction(value: any): value is Function {
   return typeof value === "function"
 }
 
-function getOnErrorFn(callbackOptions?: CallbackOptions) {
+function getHandleErrorFn(callbackOptions?: CallbackOptions) {
   if (callbackOptions?.tempDisableHandError) return
   return getHandleFn(FN_TYPE.ERROR, callbackOptions?.onHandleError)
 }
 
-function getOnSuccessFn(callbackOptions?: CallbackOptions) {
+function getHandleSuccessFn(callbackOptions?: CallbackOptions) {
   if (callbackOptions?.tempDisableHandSuccess) return
   return getHandleFn(FN_TYPE.SUCCESS, callbackOptions?.onHandleSuccess)
 }
 
-function getOnFinallyFn(callbackOptions?: CallbackOptions) {
+function getHandleFinallyFn(callbackOptions?: CallbackOptions) {
   if (callbackOptions?.tempDisableHandFinally) return
   return getHandleFn(FN_TYPE.FINALLY, callbackOptions?.onHandleFinally)
 }
@@ -83,9 +92,9 @@ export function updateHandleFinallyFn(fn: Function) {
 }
 export function handle(fn: Fn, callbackOptions?: CallbackOptions) {
   let isSyncFn = true
-  const onHandleSuccess = getOnSuccessFn(callbackOptions)
-  const onHandleError = getOnErrorFn(callbackOptions)
-  const onHandleFinally = getOnFinallyFn(callbackOptions)
+  const onHandleSuccess = getHandleSuccessFn(callbackOptions)
+  const onHandleError = getHandleErrorFn(callbackOptions)
+  const onHandleFinally = getHandleFinallyFn(callbackOptions)
   try {
     const result = fn()
     if (isPromise(result)) {
@@ -142,5 +151,5 @@ export default class HandleHelper {
   static handle(fn: Fn, callbackOptions?: CallbackOptions) {
     handle(fn, callbackOptions)
   }
-  static showLog = true
+  static showLog = true;
 }
