@@ -10,7 +10,7 @@
     "dist",
     "@types"
   ],
-  "types": "@types",
+  "types": "@types/HandleHelper.d.ts",
   "keywords": [],
   "author": {
     "name": "longjiang",

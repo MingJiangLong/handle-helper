@@ -129,7 +129,7 @@ export function handle(fn: Fn, callbackOptions?: CallbackOptions) {
   }
 }
 
-export class HandleHelper {
+export default class HandleHelper {
   static updateHandleSuccessFn(fn: Function) {
     updateHandleSuccessFn(fn)
   }
