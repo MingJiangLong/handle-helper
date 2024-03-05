@@ -11,6 +11,21 @@ handle-helper是一个统一处理同步函数和异步函数异常的简易工�
 npm install handle-helper
 ```
 
+### API
+
+- HandleHelper
+
+  - handle
+  - updateHandleErrorFn
+  - updateHandleSuccessFn
+  - updateHandleFinallyFn
+  - showLog
+  
+- handle
+- updateHandleErrorFn
+- updateHandleSuccessFn
+- updateHandleFinallyFn
+
 ### Initialization
 
   首先需要初始化统一拦截函数,最好是项目入口。
