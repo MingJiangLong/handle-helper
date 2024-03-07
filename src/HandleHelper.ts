@@ -109,7 +109,7 @@ export class HandleHelper {
       const result = fn()
       if (isPromise(result)) {
         isSyncFn = false
-        return result.then(
+        result.then(
           (success: any) => {
             this.handle(() => success, {
               onHandleSuccess,
@@ -131,20 +131,19 @@ export class HandleHelper {
           }
         )
       } else {
-        this.log(`函数${fn.name}执行成功`, result)
+        this.log(`函数执行成功`, result)
         if (!isFunction(onHandleSuccess)) return
         onHandleSuccess(result)
-        let refactory
       }
     } catch (error) {
-      this.log(`函数${fn.name}执行异常`, error)
+      this.log(`函数执行异常`, error)
       if (!isFunction(onHandleError)) {
         throw error
       }
       onHandleError(error)
     } finally {
       if (!isSyncFn) return
-      this.log(`函数${fn.name}执行结束`)
+      this.log(`函数执行结束`)
       if (!isFunction(onHandleFinally)) return
       onHandleFinally()
     }
