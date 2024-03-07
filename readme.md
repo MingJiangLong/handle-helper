@@ -13,7 +13,7 @@ npm install handle-helper
 
 ### API
 
-- HandleHelper
+- HandleHelper Instance
 
   - handle
   - updateHandleErrorFn
@@ -28,24 +28,14 @@ npm install handle-helper
 
 ### Initialization
 
-  首先需要初始化统一拦截函数,最好是项目入口。
+  工具已经提供了一个HandleHelper的实例可以直接调用，也可以自己重新实例化一个HandleHelper
 
 ```js
-import { updateHandleErrorFn, updateHandleSuccessFn } from 'handle-helper';
+import { updateHandleErrorFn, updateHandleSuccessFn，HandleHelper } from 'handle-helper';
 
-/** 初始化拦截异常错误的函数 */
-updateHandleErrorFn((error: any) => {
-  if (error?.message) {
-    console.log(error.message)
-  }
-});
 
-/** 初始化成功执行函数 */
-updateHandleSuccessFn(message => {
-  if (typeof message == 'string') {
-    console.log(message)
-  }
-});
+/** 可以使用工具提供的实例的api,也可以重新实例化一个HandleHelper */
+const handleHelper = new HandleHelper({showLog:false});
 
 ```
 
@@ -78,13 +68,17 @@ function promiseFnWithSuccessMessage(){
   })
 }
 
-async function asyncAwaitFn(){
+async function chainedPromise(){
   await promiseFnWithSuccessMessage()
-  throw new Error("asyncAwaitFn error")
+  await promiseFnWhenError()
 }
 
 handle(fnWhenError) // 控制台会打印 error
+handleHelper.handle(fnWhenError)
 
 handle(fnWithMessageReturn) // 控制台答应 finished
+handleHelper.handle(fnWithMessageReturn)
 
+handle(chainedPromise) // 控制台答应 finished
+handleHelper.handle(chainedPromise)
 ```

@@ -1,3 +1,7 @@
 src
 .gitignore
 tsconfig.json
+node_modules
+test
+jest.config.js
+yarn.lock

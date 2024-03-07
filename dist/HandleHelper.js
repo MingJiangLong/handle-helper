@@ -1,150 +1,147 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.handle = exports.updateHandleFinallyFn = exports.updateHandleErrorFn = exports.updateHandleSuccessFn = void 0;
-const ON_ERROR_FN = "__ON_HANDLE_ERROR__";
-const ON_SUCCESS_FN = "__ON_HANDLE_SUCCESS__";
-const ON_FINALLY_FN = "__ON_HANDLE_FINALLY__";
-var FN_TYPE;
-(function (FN_TYPE) {
-    FN_TYPE[FN_TYPE["SUCCESS"] = ON_ERROR_FN] = "SUCCESS";
-    FN_TYPE[FN_TYPE["ERROR"] = ON_SUCCESS_FN] = "ERROR";
-    FN_TYPE[FN_TYPE["FINALLY"] = ON_FINALLY_FN] = "FINALLY";
-})(FN_TYPE || (FN_TYPE = {}));
-const HandleFns = {
-    [ON_ERROR_FN]: undefined,
-    [ON_SUCCESS_FN]: undefined,
-    [ON_FINALLY_FN]: undefined,
-};
-/**
- * 更新捕获函数
- * @param fn
- * @param type
- * @returns
- */
-function updateHandleFns(fn, type) {
-    if (!isFunction(fn))
-        return;
-    HandleFns[type] = fn;
-    window[type] = fn;
-}
-/**
- * 获取捕获函数
- * 优先使用传入的默认函数
- * 其次使用缓存
- * 最后使用window里面保存的
- * @param type
- * @param defaultFn
- * @returns
- */
-function getHandleFn(type, defaultFn) {
-    if (isFunction(defaultFn))
-        return defaultFn;
-    const fnInClass = HandleFns[type];
-    if (isFunction(fnInClass))
-        return fnInClass;
-    const fnInWindow = window[type];
-    if (isFunction(fnInWindow))
-        return fnInWindow;
-}
+exports.handle = exports.updateHandleFinallyFn = exports.updateHandleErrorFn = exports.updateHandleSuccessFn = exports.HandleHelper = void 0;
+var FnType;
+(function (FnType) {
+    FnType["onHandleSuccess"] = "onHandleSuccess";
+    FnType["onHandleError"] = "onHandleError";
+    FnType["onHandleFinally"] = "onHandleFinally";
+})(FnType || (FnType = {}));
 function isPromise(value) {
     return (value === null || value === void 0 ? void 0 : value.then) && typeof value.then === "function";
 }
 function isFunction(value) {
     return typeof value === "function";
 }
-function getHandleErrorFn(callbackOptions) {
-    if (callbackOptions === null || callbackOptions === void 0 ? void 0 : callbackOptions.tempDisableHandError)
-        return;
-    return getHandleFn(FN_TYPE.ERROR, callbackOptions === null || callbackOptions === void 0 ? void 0 : callbackOptions.onHandleError);
+function isBoolean(value) {
+    return value === true || value === false;
 }
-function getHandleSuccessFn(callbackOptions) {
-    if (callbackOptions === null || callbackOptions === void 0 ? void 0 : callbackOptions.tempDisableHandSuccess)
-        return;
-    return getHandleFn(FN_TYPE.SUCCESS, callbackOptions === null || callbackOptions === void 0 ? void 0 : callbackOptions.onHandleSuccess);
+class HandleHelper {
+    constructor(options) {
+        this.showLog = true;
+        this.helperFns = {};
+        if (isBoolean(options === null || options === void 0 ? void 0 : options.showLog)) {
+            this.showLog = !!(options === null || options === void 0 ? void 0 : options.showLog);
+        }
+        this.log("初始化成功");
+    }
+    log(...args) {
+        if (!this.showLog)
+            return;
+        console.warn("[HandleHelper]:", ...args);
+    }
+    closeLog() {
+        this.showLog = false;
+        this.log("关闭日志输出");
+    }
+    openLog() {
+        this.showLog = true;
+        this.log("打开日志输出");
+    }
+    updateHandleSuccessFn(handle) {
+        this.helperFns = Object.assign(Object.assign({}, this.helperFns), { onHandleSuccess: handle });
+        this.log("已更新捕获成功执行函数");
+    }
+    updateHandleErrorFn(handle) {
+        this.helperFns = Object.assign(Object.assign({}, this.helperFns), { onHandleError: handle });
+        this.log("已更新捕获执行失败函数");
+    }
+    updateHandleFinallyFn(handle) {
+        this.helperFns = Object.assign(Object.assign({}, this.helperFns), { onHandleFinally: handle });
+        this.log("已更新捕获函数执行完成函数");
+    }
+    getHandleFn(type, callbackOptions) {
+        var _a;
+        const tempOptionsHandle = callbackOptions === null || callbackOptions === void 0 ? void 0 : callbackOptions[type];
+        // 禁用处理函数
+        if (tempOptionsHandle === false)
+            return;
+        // 临时处理函数
+        if (isFunction(tempOptionsHandle))
+            return tempOptionsHandle;
+        return (_a = this.helperFns) === null || _a === void 0 ? void 0 : _a[type];
+    }
+    handle(fn, callbackOptions) {
+        let isSyncFn = true;
+        const onHandleSuccess = this.getHandleFn(FnType.onHandleSuccess, callbackOptions);
+        const onHandleError = this.getHandleFn(FnType.onHandleError, callbackOptions);
+        const onHandleFinally = this.getHandleFn(FnType.onHandleFinally, callbackOptions);
+        try {
+            const result = fn();
+            if (isPromise(result)) {
+                isSyncFn = false;
+                return result.then((success) => {
+                    this.handle(() => success, {
+                        onHandleSuccess,
+                        onHandleError,
+                        onHandleFinally,
+                    });
+                }, (error) => {
+                    this.handle(() => {
+                        throw error;
+                    }, {
+                        onHandleSuccess,
+                        onHandleError,
+                        onHandleFinally,
+                    });
+                });
+            }
+            else {
+                this.log(`函数${fn.name}执行成功`, result);
+                if (!isFunction(onHandleSuccess))
+                    return;
+                onHandleSuccess(result);
+            }
+        }
+        catch (error) {
+            this.log(`函数${fn.name}执行异常`, error);
+            if (!isFunction(onHandleError)) {
+                throw error;
+            }
+            onHandleError(error);
+        }
+        finally {
+            if (!isSyncFn)
+                return;
+            this.log(`函数${fn.name}执行结束`);
+            if (!isFunction(onHandleFinally))
+                return;
+            onHandleFinally();
+        }
+    }
 }
-function getHandleFinallyFn(callbackOptions) {
-    if (callbackOptions === null || callbackOptions === void 0 ? void 0 : callbackOptions.tempDisableHandFinally)
-        return;
-    return getHandleFn(FN_TYPE.FINALLY, callbackOptions === null || callbackOptions === void 0 ? void 0 : callbackOptions.onHandleFinally);
-}
-function warn(...args) {
-    if (!!!HandleHelper.showLog)
-        return;
-    console.warn("[HandleHelper]:", ...args);
-}
-/** 可导出函数 */
+exports.HandleHelper = HandleHelper;
+const handleHelper = new HandleHelper();
+/**
+ * 默认初始化
+ * @param fn
+ */
 function updateHandleSuccessFn(fn) {
-    updateHandleFns(fn, FN_TYPE.SUCCESS);
+    handleHelper.updateHandleSuccessFn(fn);
 }
 exports.updateHandleSuccessFn = updateHandleSuccessFn;
+/**
+ * 默认初始化
+ */
 function updateHandleErrorFn(fn) {
-    updateHandleFns(fn, FN_TYPE.ERROR);
+    handleHelper.updateHandleErrorFn(fn);
 }
 exports.updateHandleErrorFn = updateHandleErrorFn;
+/**
+ * 默认初始化
+ * @param fn
+ */
 function updateHandleFinallyFn(fn) {
-    updateHandleFns(fn, FN_TYPE.FINALLY);
+    handleHelper.updateHandleFinallyFn(fn);
 }
 exports.updateHandleFinallyFn = updateHandleFinallyFn;
+/**
+ * 默认初始化的
+ * @param fn
+ * @param callbackOptions
+ * @returns
+ */
 function handle(fn, callbackOptions) {
-    let isSyncFn = true;
-    const onHandleSuccess = getHandleSuccessFn(callbackOptions);
-    const onHandleError = getHandleErrorFn(callbackOptions);
-    const onHandleFinally = getHandleFinallyFn(callbackOptions);
-    try {
-        const result = fn();
-        if (isPromise(result)) {
-            isSyncFn = false;
-            return result.then((success) => {
-                handle(() => success, {
-                    onHandleSuccess,
-                    onHandleError,
-                    onHandleFinally,
-                });
-            }, (error) => {
-                handle(() => {
-                    throw error;
-                }, {
-                    onHandleSuccess,
-                    onHandleError,
-                    onHandleFinally,
-                });
-            });
-        }
-        else {
-            if (!isFunction(onHandleSuccess))
-                return;
-            warn("handled success", result);
-            onHandleSuccess(result);
-        }
-    }
-    catch (error) {
-        if (!isFunction(onHandleError)) {
-            throw error;
-        }
-        warn("handled error", error);
-        onHandleError(error);
-    }
-    finally {
-        if (!isFunction(onHandleFinally) || !isSyncFn)
-            return;
-        warn("handled finally");
-        return onHandleFinally();
-    }
+    handleHelper.handle(fn, callbackOptions);
 }
 exports.handle = handle;
-class HandleHelper {
-    static updateHandleSuccessFn(fn) {
-        updateHandleSuccessFn(fn);
-    }
-    static updateHandleErrorFn(fn) {
-        updateHandleErrorFn(fn);
-    }
-    static updateHandleFinallyFn(fn) {
-        updateHandleFinallyFn(fn);
-    }
-    static handle(fn, callbackOptions) {
-        handle(fn, callbackOptions);
-    }
-}
-exports.default = HandleHelper;
-HandleHelper.showLog = true;

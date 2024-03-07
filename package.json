@@ -1,20 +1,29 @@
 {
   "name": "handle-helper",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "统一处理函数执行结果",
   "main": "dist/HandleHelper.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "jest"
   },
   "files": [
     "dist",
     "@types"
   ],
   "types": "@types/HandleHelper.d.ts",
-  "keywords": [],
+  "keywords": [
+    "web",
+    "error"
+  ],
   "author": {
     "name": "longjiang",
     "email": "l502858283@gmail.com"
   },
-  "license": "ISC"
+  "license": "ISC",
+  "devDependencies": {
+    "@types/jest": "^29.5.12",
+    "jest": "^29.7.0",
+    "ts-jest": "^29.1.2",
+    "typescript": "^5.4.2"
+  }
 }
