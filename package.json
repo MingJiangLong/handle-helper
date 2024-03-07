@@ -1,6 +1,6 @@
 {
   "name": "handle-helper",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "统一处理函数执行结果",
   "main": "dist/HandleHelper.js",
   "scripts": {
@@ -12,7 +12,6 @@
   ],
   "types": "@types/HandleHelper.d.ts",
   "keywords": [
-    "web",
     "error"
   ],
   "author": {
