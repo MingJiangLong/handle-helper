@@ -18,12 +18,11 @@ function isBoolean(value) {
 }
 class HandleHelper {
     constructor(options) {
-        this.showLog = true;
+        this.showLog = false;
         this.helperFns = {};
         if (isBoolean(options === null || options === void 0 ? void 0 : options.showLog)) {
             this.showLog = !!(options === null || options === void 0 ? void 0 : options.showLog);
         }
-        this.log("初始化成功");
     }
     log(...args) {
         if (!this.showLog)
@@ -91,6 +90,7 @@ class HandleHelper {
                 if (!isFunction(onHandleSuccess))
                     return;
                 onHandleSuccess(result);
+                let refactory;
             }
         }
         catch (error) {
