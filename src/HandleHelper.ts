@@ -79,7 +79,7 @@ export class HandleHelper {
     this.log("已更新捕获函数执行完成函数")
   }
 
-  private getHandleFn(type: FnType, callbackOptions?: HandleOptions) {
+  getHandleFn(type: FnType, callbackOptions?: HandleOptions) {
     const tempOptionsHandle = callbackOptions?.[type]
 
     // 禁用处理函数
@@ -181,6 +181,6 @@ export function updateHandleFinallyFn(fn: () => void) {
  * @param callbackOptions
  * @returns
  */
-export function handle(fn: () => Fn, callbackOptions?: CallbackOptions) {
+export function handle(fn: Fn, callbackOptions?: CallbackOptions) {
   handleHelper.handle(fn, callbackOptions)
 }

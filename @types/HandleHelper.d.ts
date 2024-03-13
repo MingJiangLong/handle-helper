@@ -12,6 +12,11 @@ type HandleOptions = {
 type Options = {
     showLog: boolean;
 };
+declare enum FnType {
+    onHandleSuccess = "onHandleSuccess",
+    onHandleError = "onHandleError",
+    onHandleFinally = "onHandleFinally"
+}
 export declare class HandleHelper {
     private showLog;
     private helperFns;
@@ -22,8 +27,8 @@ export declare class HandleHelper {
     updateHandleSuccessFn(handle: (value?: unknown) => void): void;
     updateHandleErrorFn(handle: (error?: unknown) => void): void;
     updateHandleFinallyFn(handle: () => void): void;
-    private getHandleFn;
-    handle(fn: Fn, callbackOptions?: HandleOptions): Promise<void> | undefined;
+    getHandleFn(type: FnType, callbackOptions?: HandleOptions): ((message?: unknown) => void) | undefined;
+    handle(fn: Fn, callbackOptions?: HandleOptions): void;
 }
 /**
  * 默认初始化
@@ -45,5 +50,5 @@ export declare function updateHandleFinallyFn(fn: () => void): void;
  * @param callbackOptions
  * @returns
  */
-export declare function handle(fn: () => Fn, callbackOptions?: CallbackOptions): void;
+export declare function handle(fn: Fn, callbackOptions?: CallbackOptions): void;
 export {};
