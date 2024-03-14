@@ -17,14 +17,10 @@ npm install handle-helper
 
   - handle
   - updateHandleErrorFn
-  - updateHandleSuccessFn
-  - updateHandleFinallyFn
   - showLog
   
 - handle
 - updateHandleErrorFn
-- updateHandleSuccessFn
-- updateHandleFinallyFn
 
 ### Initialization
 

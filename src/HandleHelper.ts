@@ -57,26 +57,12 @@ export class HandleHelper {
     this.log("打开日志输出")
   }
 
-  updateHandleSuccessFn(handle: (value?: unknown) => void) {
-    this.helperFns = {
-      ...this.helperFns,
-      onHandleSuccess: handle,
-    }
-    this.log("已更新捕获成功执行函数")
-  }
   updateHandleErrorFn(handle: (error?: unknown) => void) {
     this.helperFns = {
       ...this.helperFns,
       onHandleError: handle,
     }
     this.log("已更新捕获执行失败函数")
-  }
-  updateHandleFinallyFn(handle: () => void) {
-    this.helperFns = {
-      ...this.helperFns,
-      onHandleFinally: handle,
-    }
-    this.log("已更新捕获函数执行完成函数")
   }
 
   getHandleFn(type: FnType, callbackOptions?: HandleOptions) {
@@ -87,6 +73,7 @@ export class HandleHelper {
 
     // 临时处理函数
     if (isFunction(tempOptionsHandle)) return tempOptionsHandle
+    
     return this.helperFns?.[type]
   }
 
@@ -152,27 +139,12 @@ export class HandleHelper {
 
 const handleHelper = new HandleHelper()
 
-/**
- * 默认初始化
- * @param fn
- */
-export function updateHandleSuccessFn(fn: (value: any) => void) {
-  handleHelper.updateHandleSuccessFn(fn)
-}
 
 /**
  * 默认初始化
  */
 export function updateHandleErrorFn(fn: (value: any) => void) {
   handleHelper.updateHandleErrorFn(fn)
-}
-
-/**
- * 默认初始化
- * @param fn
- */
-export function updateHandleFinallyFn(fn: () => void) {
-  handleHelper.updateHandleFinallyFn(fn)
 }
 
 /**

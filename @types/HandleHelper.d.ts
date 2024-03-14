@@ -24,26 +24,14 @@ export declare class HandleHelper {
     private log;
     closeLog(): void;
     openLog(): void;
-    updateHandleSuccessFn(handle: (value?: unknown) => void): void;
     updateHandleErrorFn(handle: (error?: unknown) => void): void;
-    updateHandleFinallyFn(handle: () => void): void;
     getHandleFn(type: FnType, callbackOptions?: HandleOptions): ((message?: unknown) => void) | undefined;
     handle(fn: Fn, callbackOptions?: HandleOptions): void;
 }
 /**
  * 默认初始化
- * @param fn
- */
-export declare function updateHandleSuccessFn(fn: (value: any) => void): void;
-/**
- * 默认初始化
  */
 export declare function updateHandleErrorFn(fn: (value: any) => void): void;
-/**
- * 默认初始化
- * @param fn
- */
-export declare function updateHandleFinallyFn(fn: () => void): void;
 /**
  * 默认初始化的
  * @param fn

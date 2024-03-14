@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.handle = exports.updateHandleFinallyFn = exports.updateHandleErrorFn = exports.updateHandleSuccessFn = exports.HandleHelper = void 0;
+exports.handle = exports.updateHandleErrorFn = exports.HandleHelper = void 0;
 var FnType;
 (function (FnType) {
     FnType["onHandleSuccess"] = "onHandleSuccess";
@@ -37,17 +37,9 @@ class HandleHelper {
         this.showLog = true;
         this.log("打开日志输出");
     }
-    updateHandleSuccessFn(handle) {
-        this.helperFns = Object.assign(Object.assign({}, this.helperFns), { onHandleSuccess: handle });
-        this.log("已更新捕获成功执行函数");
-    }
     updateHandleErrorFn(handle) {
         this.helperFns = Object.assign(Object.assign({}, this.helperFns), { onHandleError: handle });
         this.log("已更新捕获执行失败函数");
-    }
-    updateHandleFinallyFn(handle) {
-        this.helperFns = Object.assign(Object.assign({}, this.helperFns), { onHandleFinally: handle });
-        this.log("已更新捕获函数执行完成函数");
     }
     getHandleFn(type, callbackOptions) {
         var _a;
@@ -113,27 +105,11 @@ exports.HandleHelper = HandleHelper;
 const handleHelper = new HandleHelper();
 /**
  * 默认初始化
- * @param fn
- */
-function updateHandleSuccessFn(fn) {
-    handleHelper.updateHandleSuccessFn(fn);
-}
-exports.updateHandleSuccessFn = updateHandleSuccessFn;
-/**
- * 默认初始化
  */
 function updateHandleErrorFn(fn) {
     handleHelper.updateHandleErrorFn(fn);
 }
 exports.updateHandleErrorFn = updateHandleErrorFn;
-/**
- * 默认初始化
- * @param fn
- */
-function updateHandleFinallyFn(fn) {
-    handleHelper.updateHandleFinallyFn(fn);
-}
-exports.updateHandleFinallyFn = updateHandleFinallyFn;
 /**
  * 默认初始化的
  * @param fn
