@@ -1,12 +1,12 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.handle = exports.updateHandleErrorFn = exports.HandleHelper = void 0;
+exports.handle = exports.updateHandleErrorFn = exports.handleHelper = exports.HandleHelper = exports.FnType = void 0;
 var FnType;
 (function (FnType) {
     FnType["onHandleSuccess"] = "onHandleSuccess";
     FnType["onHandleError"] = "onHandleError";
     FnType["onHandleFinally"] = "onHandleFinally";
-})(FnType || (FnType = {}));
+})(FnType = exports.FnType || (exports.FnType = {}));
 function isPromise(value) {
     return (value === null || value === void 0 ? void 0 : value.then) && typeof value.then === "function";
 }
@@ -102,12 +102,12 @@ class HandleHelper {
     }
 }
 exports.HandleHelper = HandleHelper;
-const handleHelper = new HandleHelper();
+exports.handleHelper = new HandleHelper();
 /**
  * 默认初始化
  */
 function updateHandleErrorFn(fn) {
-    handleHelper.updateHandleErrorFn(fn);
+    exports.handleHelper.updateHandleErrorFn(fn);
 }
 exports.updateHandleErrorFn = updateHandleErrorFn;
 /**
@@ -117,6 +117,6 @@ exports.updateHandleErrorFn = updateHandleErrorFn;
  * @returns
  */
 function handle(fn, callbackOptions) {
-    handleHelper.handle(fn, callbackOptions);
+    exports.handleHelper.handle(fn, callbackOptions);
 }
 exports.handle = handle;
