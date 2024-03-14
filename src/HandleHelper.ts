@@ -1,4 +1,4 @@
-type Fn = (() => any) | (() => Promise<any>)
+export type Fn = (() => any) | (() => Promise<any>)
 
 type CallbackOptions = {
   onHandleSuccess?: (message?: unknown) => void
@@ -6,7 +6,7 @@ type CallbackOptions = {
   onHandleFinally?: () => void
 }
 
-type HandleOptions = {
+export type HandleOptions = {
   onHandleSuccess?: ((message?: unknown) => void) | boolean
   onHandleError?: ((error?: unknown) => void) | boolean
   onHandleFinally?: (() => void) | boolean
@@ -15,7 +15,7 @@ type HandleOptions = {
 type Options = {
   showLog: boolean
 }
-enum FnType {
+export enum FnType {
   onHandleSuccess = "onHandleSuccess",
   onHandleError = "onHandleError",
   onHandleFinally = "onHandleFinally",
@@ -73,7 +73,7 @@ export class HandleHelper {
 
     // 临时处理函数
     if (isFunction(tempOptionsHandle)) return tempOptionsHandle
-    
+
     return this.helperFns?.[type]
   }
 
@@ -137,8 +137,7 @@ export class HandleHelper {
   }
 }
 
-const handleHelper = new HandleHelper()
-
+export const handleHelper = new HandleHelper()
 
 /**
  * 默认初始化
@@ -153,6 +152,6 @@ export function updateHandleErrorFn(fn: (value: any) => void) {
  * @param callbackOptions
  * @returns
  */
-export function handle(fn: Fn, callbackOptions?: CallbackOptions) {
+export function handle(fn: Fn, callbackOptions?: HandleOptions) {
   handleHelper.handle(fn, callbackOptions)
 }
