@@ -1,20 +1,24 @@
 export type Fn = (() => any) | (() => Promise<any>)
 
-type CallbackOptions = {
-  onHandleSuccess?: (message?: unknown) => void
-  onHandleError?: (error?: unknown) => void
-  onHandleFinally?: () => void
-}
+export type HandleFn = (data?: unknown, existHandle?: () => void) => void
 
 export type HandleOptions = {
-  onHandleSuccess?: ((message?: unknown) => void) | boolean
-  onHandleError?: ((error?: unknown) => void) | boolean
-  onHandleFinally?: (() => void) | boolean
+  onHandleSuccess?: HandleSuccessFn | false
+  onHandleError?: HandleErrorFn | false
+  onHandleFinally?: HandleFinallyFn | false
 }
 
-type Options = {
-  showLog: boolean
-}
+type HandleSuccessFn = (
+  message: unknown,
+  existHandle?: (message: unknown) => void
+) => void
+
+type HandleErrorFn = (
+  error: unknown,
+  existHandle?: (error: unknown) => void
+) => void
+
+type HandleFinallyFn = (existHandle?: () => void) => void
 export enum FnType {
   onHandleSuccess = "onHandleSuccess",
   onHandleError = "onHandleError",
@@ -28,69 +32,121 @@ function isPromise(value: any): value is Promise<any> {
 function isFunction(value: any): value is Function {
   return typeof value === "function"
 }
-function isBoolean(value: any): value is boolean {
-  return value === true || value === false
-}
 
+const TEMP_HANDLE = "temp_handle"
+const GLOBAL_HANDLE = "global_handle"
+const DISABLE_HANDLE = "disable_handle"
 export class HandleHelper {
-  private showLog = false
-  private helperFns: CallbackOptions = {}
+  private helperFns: HandleOptions = {}
 
-  constructor(options?: Options) {
-    if (isBoolean(options?.showLog)) {
-      this.showLog = !!options?.showLog
-    }
-  }
-
-  private log(...args: any[]) {
-    if (!this.showLog) return
-    console.warn("[HandleHelper]:", ...args)
-  }
-
-  closeLog() {
-    this.showLog = false
-    this.log("关闭日志输出")
-  }
-
-  openLog() {
-    this.showLog = true
-    this.log("打开日志输出")
-  }
-
-  updateHandleErrorFn(handle: (error?: unknown) => void) {
+  /** 更新handle函数 */
+  private updateHandelFn(type: FnType, handle: (data?: unknown) => void) {
     this.helperFns = {
       ...this.helperFns,
-      onHandleError: handle,
+      [type]: handle,
     }
-    this.log("已更新捕获执行失败函数")
   }
 
-  getHandleFn(type: FnType, callbackOptions?: HandleOptions) {
+  /** 更新拦截函数执行错误函数 */
+  updateHandleErrorFn(handle: (error?: unknown) => void) {
+    this.updateHandelFn(FnType.onHandleError, handle)
+  }
+
+  /** 更新拦截函数执行成功函数 */
+  updateHandleSuccessFn(handle: (message?: unknown) => void) {
+    this.updateHandelFn(FnType.onHandleSuccess, handle)
+  }
+
+  /** 更新拦截函数执行结束函数 */
+  updateHandleFinallyFn(handle: () => void) {
+    this.updateHandelFn(FnType.onHandleFinally, handle)
+  }
+
+  getGlobalHandle(type: FnType): any {
+    return this.helperFns[type]
+  }
+
+  /**
+   * 获取捕获函数
+   * 优先handle options，再取通过update函数更新的handle
+   * @param type
+   * @param callbackOptions
+   * @returns
+   */
+  private getHandleFnInfo(type: FnType, callbackOptions?: HandleOptions) {
     const tempOptionsHandle = callbackOptions?.[type]
+    if (tempOptionsHandle === false) {
+      return {
+        type: DISABLE_HANDLE,
+        callback: undefined,
+      }
+    }
 
-    // 禁用处理函数
-    if (tempOptionsHandle === false) return
+    if (isFunction(tempOptionsHandle)) {
+      return {
+        type: TEMP_HANDLE,
+        callback: tempOptionsHandle,
+      }
+    }
 
-    // 临时处理函数
-    if (isFunction(tempOptionsHandle)) return tempOptionsHandle
+    let existHandle = this.helperFns?.[type]
 
-    return this.helperFns?.[type]
+    if (isFunction(existHandle)) {
+      return {
+        type: GLOBAL_HANDLE,
+        callback: existHandle,
+      }
+    }
+  }
+
+  private invokeSuccessOrErrorHandle(
+    type: FnType,
+    callbackOptions?: HandleOptions,
+    result?: any
+  ) {
+    const handleInfo = this.getHandleFnInfo(type, callbackOptions)
+    let callback = handleInfo?.callback
+    let callbackType = handleInfo?.type
+
+    if (callbackType === TEMP_HANDLE && isFunction(callback))
+      return callback(result, this.getGlobalHandle(type))
+
+    if (callbackType === GLOBAL_HANDLE && isFunction(callback))
+      return callback(result)
+
+    if (type == FnType.onHandleError) throw result
+  }
+  private invokeSuccessHandle(callbackOptions?: HandleOptions, result?: any) {
+    this.invokeSuccessOrErrorHandle(
+      FnType.onHandleSuccess,
+      callbackOptions,
+      result
+    )
+  }
+  private invokeErrorHandle(callbackOptions?: HandleOptions, error?: any) {
+    this.invokeSuccessOrErrorHandle(
+      FnType.onHandleError,
+      callbackOptions,
+      error
+    )
+  }
+  private invokeFinallyHandle(callbackOptions?: HandleOptions) {
+    const handleInfo = this.getHandleFnInfo(
+      FnType.onHandleFinally,
+      callbackOptions
+    )
+    let callback = handleInfo?.callback as HandleFinallyFn
+    let callbackType = handleInfo?.type
+
+    if (callbackType === TEMP_HANDLE && isFunction(callback))
+      return callback(this.getGlobalHandle(FnType.onHandleFinally))
+
+    if (callbackType === GLOBAL_HANDLE && isFunction(callback))
+      return callback()
   }
 
   handle(fn: Fn, callbackOptions?: HandleOptions) {
     let isSyncFn = true
-    const onHandleSuccess = this.getHandleFn(
-      FnType.onHandleSuccess,
-      callbackOptions
-    )
-    const onHandleError = this.getHandleFn(
-      FnType.onHandleError,
-      callbackOptions
-    )
-    const onHandleFinally = this.getHandleFn(
-      FnType.onHandleFinally,
-      callbackOptions
-    )
 
     try {
       const result = fn()
@@ -98,41 +154,22 @@ export class HandleHelper {
         isSyncFn = false
         result.then(
           (success: any) => {
-            this.handle(() => success, {
-              onHandleSuccess,
-              onHandleError,
-              onHandleFinally,
-            })
+            this.handle(() => success, callbackOptions)
           },
           (error: unknown) => {
-            this.handle(
-              () => {
-                throw error
-              },
-              {
-                onHandleSuccess,
-                onHandleError,
-                onHandleFinally,
-              }
-            )
+            this.handle(() => {
+              throw error
+            }, callbackOptions)
           }
         )
       } else {
-        this.log(`函数执行成功`, result)
-        if (!isFunction(onHandleSuccess)) return
-        onHandleSuccess(result)
+        this.invokeSuccessHandle(callbackOptions, result)
       }
     } catch (error) {
-      this.log(`函数执行异常`, error)
-      if (!isFunction(onHandleError)) {
-        throw error
-      }
-      onHandleError(error)
+      this.invokeErrorHandle(callbackOptions, error)
     } finally {
       if (!isSyncFn) return
-      this.log(`函数执行结束`)
-      if (!isFunction(onHandleFinally)) return
-      onHandleFinally()
+      this.invokeFinallyHandle(callbackOptions)
     }
   }
 }
@@ -144,6 +181,20 @@ export const handleHelper = new HandleHelper()
  */
 export function updateHandleErrorFn(fn: (value: any) => void) {
   handleHelper.updateHandleErrorFn(fn)
+}
+
+/**
+ * 默认初始化
+ */
+export function updateHandleSuccessFn(fn: (value: any) => void) {
+  handleHelper.updateHandleErrorFn(fn)
+}
+
+/**
+ * 默认初始化
+ */
+export function updateHandleFinallyFn(fn: () => void) {
+  handleHelper.updateHandleFinallyFn(fn)
 }
 
 /**

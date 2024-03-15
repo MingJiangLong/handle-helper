@@ -1,7 +1,7 @@
 
 # Handle-Helper
 
-handle-helper是一个统一处理同步函数和异步函数异常的简易工具
+handle-helper which is a simple tool to centralized handling of function execution results
 
 ## Getting Started
 
@@ -17,27 +17,27 @@ npm install handle-helper
 
   - handle
   - updateHandleErrorFn
-  - showLog
+  - updateHandleSuccessFn
+  - updateHandleFinallyFn
   
+- handleHelper
 - handle
 - updateHandleErrorFn
+- updateHandleSuccessFn
+- updateHandleFinallyFn
 
 ### Initialization
 
-  工具已经提供了一个HandleHelper的实例可以直接调用，也可以自己重新实例化一个HandleHelper
+  you can renew an instance of `HandleHelper`, or you can directly use `handleHelper` which is a global instance of `HandleHelper`
 
 ```js
-import { updateHandleErrorFn, updateHandleSuccessFn，HandleHelper } from 'handle-helper';
+import { updateHandleErrorFn, updateHandleSuccessFn，HandleHelper,handleHelper } from 'handle-helper';
 
-
-/** 可以使用工具提供的实例的api,也可以重新实例化一个HandleHelper */
-const handleHelper = new HandleHelper({showLog:false});
+const handleHelper = new HandleHelper();
 
 ```
 
 ### Usage
-
-当拦截异步函数异常时，异步函数需要满足PromiseA+规范
 
 ```javascript
 import { handle } from 'handle-helper';
@@ -51,7 +51,6 @@ function fnWithMessageReturn(){
 }
 
 // Promise
-
 function promiseFnWhenError(){
   return new Promise((s,e)=>{
     return e(new Error("error"))
@@ -69,12 +68,12 @@ async function chainedPromise(){
   await promiseFnWhenError()
 }
 
-handle(fnWhenError) // 控制台会打印 error
+handle(fnWhenError) //  error
 handleHelper.handle(fnWhenError)
 
-handle(fnWithMessageReturn) // 控制台答应 finished
+handle(fnWithMessageReturn) // finished
 handleHelper.handle(fnWithMessageReturn)
 
-handle(chainedPromise) // 控制台答应 finished
+handle(chainedPromise) // finished
 handleHelper.handle(chainedPromise)
 ```

@@ -1,6 +1,6 @@
 import { HandleHelper } from "../src/HandleHelper"
 const {} = require("")
-const handleHelper = new HandleHelper({ showLog: false })
+const handleHelper = new HandleHelper()
 
 let successHandleInvoke = false
 let errorHandleInvoke = false
@@ -85,12 +85,14 @@ describe("Handle-Helper", () => {
       test("无异常函数,禁用onHandleFinally", () => {
         first = 1
         second = 2
+
         function testFn() {
           first++
         }
         handleHelper.handle(testFn, {
           onHandleFinally: false,
         })
+
         expect(first).toEqual(second)
       })
       test("有异常函数,成功调用onHandleFinally", () => {
